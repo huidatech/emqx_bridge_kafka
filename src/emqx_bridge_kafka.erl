@@ -165,7 +165,7 @@ on_message_publish(Message, _Env) ->
             ProduceTopic = A;
         true ->
             ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
-    end
+    end,
     Payload=Message#message.payload,
     Qos=Message#message.qos,
     From=Message#message.from,
