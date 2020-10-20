@@ -4,8 +4,9 @@
 
 start() -> 
    io:fwrite("Hello, world!\n"),
-   Topic = "$c020202/abvc",
+   % Topic = "$c020202/abvc",
    % string:chr(Topic,$$)==1.
+   Topic=atom_to_list('datianqi/abc'),
    LinkFlag = string:chr(Topic,$$),
    OtherFlag = string:chr(Topic,$/),
    if 
@@ -13,9 +14,11 @@ start() ->
          ProduceTopic = "linktrace";
       OtherFlag /= 0 ->
          Tmp = string:tokens(Topic,"/"),
-         [A | B] = Tmp,
-         ProduceTopic = A
-   end.
+         ProduceTopic = erlang:hd(Tmp);
+      true ->
+         ProduceTopic = abc
+   end,
+   ProduceTopic.
    %  ProduceTopic.
 
    % if 
