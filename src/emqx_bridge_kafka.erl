@@ -155,17 +155,17 @@ on_message_publish(Message, _Env) ->
     {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
     % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
     Topic=Message#message.topic,
-    TopicStr = atom_to_list(Topic),
+    TopicStr = erlang:binary_to_list(Topic),
     LinkFlag = string:chr(TopicStr,$$),
     OtherFlag = string:chr(TopicStr,$/),
     if 
         LinkFlag == 1 ->
             ProduceTopicStr = "linktrace",
-            ProduceTopic = list_to_atom(ProduceTopicStr);
+            ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
         OtherFlag /= 0 ->
             Tmp = string:tokens(TopicStr,"/"),
             ProduceTopicStr = erlang:hd(Tmp),
-            ProduceTopic = list_to_atom(ProduceTopicStr);
+            ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
         true ->
             ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
     end,
