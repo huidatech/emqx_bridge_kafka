@@ -153,8 +153,19 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 on_message_publish(Message, _Env) ->
     io:format("Publish ~s~n", [emqx_message:format(Message)]),
     {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
-    ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
+    % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
     Topic=Message#message.topic,
+    Tmp = string:chr(Topic,$/),
+    if 
+        string:chr(Topic,$$) == 1 ->
+            ProduceTopic = "linktrace";
+        string:chr(Topic,$/) /= 0 ->
+            Tmp = string:tokens(Topic,"/"),
+            [A | B] = Tmp,
+            ProduceTopic = A;
+        true ->
+            ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
+    end
     Payload=Message#message.payload,
     Qos=Message#message.qos,
     From=Message#message.from,
