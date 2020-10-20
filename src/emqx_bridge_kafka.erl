@@ -158,7 +158,7 @@ on_message_publish(Message, _Env) ->
     Payload=Message#message.payload,
     Qos=Message#message.qos,
     From=Message#message.from,
-    Headers=Message#message.headers,
+    % Headers=Message#message.headers.username,
     %% Timestamp=Message#message.timestamp,
     Json = jsx:encode([
             {type,<<"published">>},
@@ -166,7 +166,7 @@ on_message_publish(Message, _Env) ->
             {payload,Payload},
             {qos,Qos},
             {from,From},
-            {headers,Headers},
+            % {headers,Headers},
             {cluster_node,node()}
             %% ,{ts,emqx_time:now_to_secs(Timestamp)}
     ]),
