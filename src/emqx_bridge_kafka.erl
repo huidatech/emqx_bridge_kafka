@@ -80,6 +80,12 @@ load(Env) ->
 on_client_connect(ConnInfo = #{clientid := ClientId}, Props, _Env) ->
     io:format("Client(~s) connect, ConnInfo: ~p, Props: ~p~n",
               [ClientId, ConnInfo, Props]),
+    Json = jsx:encode([
+            {type,<<"connected">>},
+            {clientid,ClientId},
+            {cluster_node,node()}
+    ]),
+    ekaf:produce_async(<<"linkstatus">>, Json),
     {ok, Props}.
 
 on_client_connack(ConnInfo = #{clientid := ClientId}, Rc, Props, _Env) ->
@@ -93,7 +99,14 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
 
 on_client_disconnected(ClientInfo = #{clientid := ClientId}, ReasonCode, ConnInfo, _Env) ->
     io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
-              [ClientId, ReasonCode, ClientInfo, ConnInfo]).
+              [ClientId, ReasonCode, ClientInfo, ConnInfo]),
+    Json = jsx:encode([
+            {type,<<"disconnected">>},
+            {clientid,ClientId},
+            {reasoncode,ReasonCode},
+            {cluster_node,node()}
+    ]),
+    ekaf:produce_async(<<"linkstatus">>, Json).
 
 on_client_authenticate(_ClientInfo = #{clientid := ClientId}, Result, _Env) ->
     io:format("Client(~s) authenticate, Result:~n~p~n", [ClientId, Result]),
