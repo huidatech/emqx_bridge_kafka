@@ -159,7 +159,7 @@ on_message_publish(Message, _Env) ->
     Qos=Message#message.qos,
     From=Message#message.from,
     % Headers=Message#message.headers#username,
-    Username=maps:get(username,Message#message.headers)
+    Username=maps:get(username,Message#message.headers),
     Timestamp=Message#message.timestamp,
     Json = jsx:encode([
             {type,<<"published">>},
