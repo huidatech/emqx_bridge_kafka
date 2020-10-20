@@ -159,16 +159,17 @@ on_message_publish(Message, _Env) ->
     Qos=Message#message.qos,
     From=Message#message.from,
     % Headers=Message#message.headers#username,
-    %% Timestamp=Message#message.timestamp,
+    Username=maps:get(username,Message#message.headers)
+    Timestamp=Message#message.timestamp,
     Json = jsx:encode([
             {type,<<"published">>},
             {topic,Topic},
             {payload,Payload},
             {qos,Qos},
-            {from,From},
-            % {headers,Headers},
-            {cluster_node,node()}
-            %% ,{ts,emqx_time:now_to_secs(Timestamp)}
+            {clientid,From},
+            {username,Username},
+            {cluster_node,node()},
+            {ts,emqx_time:now_to_secs(Timestamp)}
     ]),
     ekaf:produce_async(ProduceTopic, Json),
     % ekaf:produce_async(Topic, Payload),
