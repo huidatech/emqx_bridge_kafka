@@ -161,11 +161,13 @@ on_message_publish(Message, _Env) ->
     if 
         LinkFlag == 1 ->
             ProduceTopicStr = "linktrace",
-            ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
+            % ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
+            ProduceTopic = ProduceTopicStr;
         OtherFlag /= 0 ->
             Tmp = string:tokens(TopicStr,"/"),
             ProduceTopicStr = erlang:hd(Tmp),
-            ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
+            % ProduceTopic = erlang:list_to_bindary(ProduceTopicStr);
+            ProduceTopic = ProduceTopicStr;
         true ->
             ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
     end,
