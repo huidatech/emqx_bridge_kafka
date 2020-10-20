@@ -158,7 +158,7 @@ on_message_publish(Message, _Env) ->
     Tmp = string:chr(Topic,$/),
     if 
         string:chr(Topic,$$) == 1 ->
-            ProduceTopic = "linktrace";
+            ProduceTopic = linktrace;
         string:chr(Topic,$/) /= 0 ->
             Tmp = string:tokens(Topic,"/"),
             ProduceTopic = erlang:hd(Tmp);
