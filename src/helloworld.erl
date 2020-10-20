@@ -6,9 +6,8 @@ start() ->
    io:fwrite("Hello, world!\n"),
    Topic = "$c020202/abvc",
    Tmp = string:tokens(Topic,"/"),
-   [A | B] = Tmp,
-   Topic2 = list_to_atom(A),
-   Topic2.
+   A = erlang:hd(Tmp),
+   A.
 
    % if 
    %    Tmp == 3 ->

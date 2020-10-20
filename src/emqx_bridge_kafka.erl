@@ -161,8 +161,7 @@ on_message_publish(Message, _Env) ->
             ProduceTopic = "linktrace";
         string:chr(Topic,$/) /= 0 ->
             Tmp = string:tokens(Topic,"/"),
-            [A | B] = Tmp,
-            ProduceTopic = A;
+            ProduceTopic = erlang:hd(Tmp);
         true ->
             ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
     end,
