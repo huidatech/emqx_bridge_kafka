@@ -155,11 +155,12 @@ on_message_publish(Message, _Env) ->
     {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
     % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
     Topic=Message#message.topic,
-    Tmp = string:chr(Topic,$/),
+    LinkFlag = string:chr(Topic,$$),
+    OtherFlag = string:chr(Topic,$/),
     if 
-        string:chr(Topic,$$) == 1 ->
-            ProduceTopic = linktrace;
-        string:chr(Topic,$/) /= 0 ->
+        LinkFlag == 1 ->
+            ProduceTopic = "linktrace";
+        OtherFlag /= 0 ->
             Tmp = string:tokens(Topic,"/"),
             ProduceTopic = erlang:hd(Tmp);
         true ->
