@@ -105,7 +105,7 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
             {ts,M * 1000000 + S},
             {cluster_node,node()}
     ]),
-    ekaf:produce_async(<<"linkstatus">>, Json),
+    ekaf:produce_async(<<"linkstatus">>, Json).
 
 on_client_disconnected(ClientInfo = #{clientid := ClientId}, ReasonCode, ConnInfo, _Env) ->
     % io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
