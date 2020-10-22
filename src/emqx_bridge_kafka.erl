@@ -286,7 +286,7 @@ unload() ->
 %% 初始化brod https://github.com/klarna/brod
 brod_init(_Env) ->
     {ok, _} = application:ensure_all_started(brod), 
-    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    {ok, Values} = application:get_env(emqx_bridge_kafka, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),  
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     ClientConfig = [],%% socket error recovery
