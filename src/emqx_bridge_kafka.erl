@@ -291,7 +291,7 @@ brod_init(_Env) ->
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     ClientConfig = [],%% socket error recovery
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
-    ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
+    % ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
     io:format("Init brod KafkaBroker with ~p~n", [BootstrapBroker]),
     io:format("Init brod KafkaTopic with ~p~n", [KafkaTopic]).
 
