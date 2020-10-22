@@ -289,7 +289,8 @@ brod_init(_Env) ->
     {ok, Values} = application:get_env(emqx_bridge_kafka, values),
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),  
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
-    ClientConfig = [],%% socket error recovery
+    ClientConfig = [{auto_start_producers, true},
+                    {default_producer_config, []}],%% socket error recovery
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     % ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
     io:format("Init brod KafkaBroker with ~p~n", [BootstrapBroker]),
