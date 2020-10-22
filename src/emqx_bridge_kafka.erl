@@ -52,7 +52,8 @@
 
 %% Called when the plugin application start
 load(Env) ->
-    ekaf_init([Env]),
+    brod_init([Env]),
+    % ekaf_init([Env]),
     % emqx:hook('client.connect',      {?MODULE, on_client_connect, [Env]}),
     % emqx:hook('client.connack',      {?MODULE, on_client_connack, [Env]}),
     emqx:hook('client.connected',    {?MODULE, on_client_connected, [Env]}),
@@ -178,7 +179,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     % io:format("Publish ~s~n", [emqx_message:format(Message)]),
-    {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
+    % {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
     % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
     Topic=Message#message.topic,
     TopicStr = erlang:binary_to_list(Topic),
@@ -195,7 +196,8 @@ on_message_publish(Message, _Env) ->
             ProduceTopic = erlang:list_to_binary(ProduceTopicStr);
             % ProduceTopic = ProduceTopicStr;
         true ->
-            ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
+            % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic)
+            ProduceTopic = KafkaTopic
     end,
 
     Payload=Message#message.payload,
@@ -205,7 +207,7 @@ on_message_publish(Message, _Env) ->
     Username=maps:get(username,Message#message.headers),
     Timestamp=Message#message.timestamp,
     Json = jsx:encode([
-            {type,<<"published">>},
+            {type,<<"publish">>},
             {topic,Topic},
             {payload,Payload},
             {qos,Qos},
@@ -214,7 +216,11 @@ on_message_publish(Message, _Env) ->
             {cluster_node,node()},
             {ts,Timestamp}
     ]),
-    ekaf:produce_async(ProduceTopic, Json),
+    PartitionFun = fun(_Topic, PartitionsCount, _Key, _Value) ->
+                {ok, crypto:rand_uniform(0, PartitionsCount)}
+                end,
+    ok = brod:produce_sync(brod_client_1, ProduceTopic, PartitionFun, <<>>, Json),
+    % ekaf:produce_async(ProduceTopic, Json),
     % ekaf:produce_async(Topic, Payload),
     {ok, Message}.
 
@@ -236,6 +242,7 @@ on_message_acked(_ClientInfo = #{clientid := ClientId}, Message, _Env) ->
 
 %% Called when the plugin application stop
 unload() ->
+    brod_close(),
     % emqx:unhook('client.connect',      {?MODULE, on_client_connect}),
     % emqx:unhook('client.connack',      {?MODULE, on_client_connack}),
     emqx:unhook('client.connected',    {?MODULE, on_client_connected}),
@@ -266,3 +273,22 @@ ekaf_init(_Env) ->
     application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
     {ok, _} = application:ensure_all_started(ekaf),
     io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).        
+
+%% 初始化brod https://github.com/klarna/brod
+brod_init(_Env) ->
+    {ok, _} = application:ensure_all_started(brod), 
+    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),  
+    KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
+    ClientConfig = [],%% socket error recovery
+    ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
+    ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
+    io:format("Init brod KafkaBroker with ~p~n", [BootstrapBroker]),
+    io:format("Init brod KafkaTopic with ~p~n", [KafkaTopic]).
+
+%% 关闭brod
+brod_close() ->
+    {ok, Values} = application:get_env(emqx_plugin_kafka, values),
+    BootstrapBroker = proplists:get_value(bootstrap_broker, Values), 
+    io:format("Close brod with ~p~n", [BootstrapBroker]),
+    brod:stop_client(brod_client_1).
