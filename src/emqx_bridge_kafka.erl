@@ -81,14 +81,14 @@ load(Env) ->
 on_client_connect(ConnInfo = #{clientid := ClientId}, Props, _Env) ->
     % io:format("Client(~s) connect, ConnInfo: ~p, Props: ~p~n",
     %           [ClientId, ConnInfo, Props]),
-    {M, S, _} = os:timestamp(),
-    Json = jsx:encode([
-            {type,<<"connected">>},
-            {clientid,ClientId},
-            {ts,M * 1000000 + S},
-            {cluster_node,node()}
-    ]),
-    ekaf:produce_async(<<"linkstatus">>, Json),
+    % {M, S, _} = os:timestamp(),
+    % Json = jsx:encode([
+    %         {type,<<"connected">>},
+    %         {clientid,ClientId},
+    %         {ts,M * 1000000 + S},
+    %         {cluster_node,node()}
+    % ]),
+    % ekaf:produce_async(<<"linkstatus">>, Json),
     {ok, Props}.
 
 on_client_connack(ConnInfo = #{clientid := ClientId}, Rc, Props, _Env) ->
@@ -106,7 +106,11 @@ on_client_connected(ClientInfo = #{clientid := ClientId}, ConnInfo, _Env) ->
             {ts,M * 1000000 + S},
             {cluster_node,node()}
     ]),
-    ekaf:produce_async(<<"linkstatus">>, Json).
+    % ekaf:produce_async(<<"linkstatus">>, Json).
+    PartitionFun = fun(_Topic, PartitionsCount, _Key, _Value) ->
+                {ok, crypto:rand_uniform(0, PartitionsCount)}
+                end,
+    brod:produce_sync(brod_client_1, <<"linkstatus">>, PartitionFun, <<>>, Json).
 
 on_client_disconnected(ClientInfo = #{clientid := ClientId}, ReasonCode, ConnInfo, _Env) ->
     % io:format("Client(~s) disconnected due to ~p, ClientInfo:~n~p~n, ConnInfo:~n~p~n",
@@ -120,7 +124,11 @@ on_client_disconnected(ClientInfo = #{clientid := ClientId}, ReasonCode, ConnInf
             {ts,M * 1000000 + S},
             {cluster_node,node()}
     ]),
-    ekaf:produce_async(<<"linkstatus">>, Json).
+    % ekaf:produce_async(<<"linkstatus">>, Json).
+    PartitionFun = fun(_Topic, PartitionsCount, _Key, _Value) ->
+                {ok, crypto:rand_uniform(0, PartitionsCount)}
+                end,
+    brod:produce_sync(brod_client_1, <<"linkstatus">>, PartitionFun, <<>>, Json).
 
 on_client_authenticate(_ClientInfo = #{clientid := ClientId}, Result, _Env) ->
     io:format("Client(~s) authenticate, Result:~n~p~n", [ClientId, Result]),
@@ -265,15 +273,15 @@ unload() ->
     % emqx:unhook('message.dropped',     {?MODULE, on_message_dropped}).
 
 %% Init kafka server parameters
-ekaf_init(_Env) ->
-    application:load(ekaf),
-    {ok, Values} = application:get_env(emqx_bridge_kafka, values),
-    BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
-    PartitionStrategy= proplists:get_value(partition_strategy, Values),
-    application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
-    application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
-    {ok, _} = application:ensure_all_started(ekaf),
-    io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).        
+% ekaf_init(_Env) ->
+%     application:load(ekaf),
+%     {ok, Values} = application:get_env(emqx_bridge_kafka, values),
+%     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),
+%     PartitionStrategy= proplists:get_value(partition_strategy, Values),
+%     application:set_env(ekaf, ekaf_partition_strategy, PartitionStrategy),
+%     application:set_env(ekaf, ekaf_bootstrap_broker, BootstrapBroker),
+%     {ok, _} = application:ensure_all_started(ekaf),
+%     io:format("Initialized ekaf with ~p~n", [BootstrapBroker]).        
 
 %% 初始化brod https://github.com/klarna/brod
 brod_init(_Env) ->
