@@ -179,8 +179,9 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     % io:format("Publish ~s~n", [emqx_message:format(Message)]),
-    % {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
+    {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
     % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
+    % KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     Topic=Message#message.topic,
     TopicStr = erlang:binary_to_list(Topic),
     LinkFlag = string:chr(TopicStr,$$),
