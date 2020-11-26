@@ -187,7 +187,7 @@ on_message_publish(Message = #message{topic = <<"$SYS/", _/binary>>}, _Env) ->
 
 on_message_publish(Message, _Env) ->
     % io:format("Publish ~s~n", [emqx_message:format(Message)]),
-    {ok, KafkaTopic} = application:get_env(emqx_bridge_kafka, values),
+    {ok, KafkaTopic} = application:get_env(kafka_producer_topic, values),
     % ProduceTopic = proplists:get_value(kafka_producer_topic, KafkaTopic),
     % KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     Topic=Message#message.topic,
@@ -290,7 +290,7 @@ brod_init(_Env) ->
     BootstrapBroker = proplists:get_value(bootstrap_broker, Values),  
     KafkaTopic = proplists:get_value(kafka_producer_topic, Values),
     ClientConfig = [{auto_start_producers, true},
-                    {allow_auto_topic_creation,true},
+                    % {allow_auto_topic_creation,true},
                     {default_producer_config, []}],%% socket error recovery
     ok = brod:start_client(BootstrapBroker, brod_client_1, ClientConfig),
     % ok = brod:start_producer(brod_client_1, KafkaTopic, _ProducerConfig = []),   
