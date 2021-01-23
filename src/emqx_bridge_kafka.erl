@@ -232,7 +232,7 @@ on_message_publish(Message, _Env) ->
     {ok, CallRef} = brod:produce(brod_client_1, ProduceTopic, PartitionFun, <<>>, Json),
     #brod_produce_reply{ call_ref = CallRef %% returned from brod:produce
                     , result   = brod_produce_req_acked
-                    }
+                    },
     % ekaf:produce_async(ProduceTopic, Json),
     % ekaf:produce_async(Topic, Payload),
     {ok, Message}.
