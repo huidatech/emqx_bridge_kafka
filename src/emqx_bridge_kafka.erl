@@ -229,9 +229,8 @@ on_message_publish(Message, _Env) ->
     PartitionFun = fun(_Topic, PartitionsCount, _Key, _Value) ->
                 {ok, crypto:rand_uniform(0, PartitionsCount)}
                 end,
-    {ok, CallRef} = brod:produce(brod_client_1, ProduceTopic, PartitionFun, <<>>, Json),
-    #brod_produce_reply{call_ref = CallRef,
-                                result = brod_produce_req_acked},
+    brod:produce_sync(brod_client_1, ProduceTopic, PartitionFun, <<>>, Json),
+
     % ekaf:produce_async(ProduceTopic, Json),
     % ekaf:produce_async(Topic, Payload),
     {ok, Message}.
