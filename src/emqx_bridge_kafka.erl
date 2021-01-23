@@ -51,6 +51,23 @@
         , on_message_dropped/4
         ]).
 
+-define(WAIT(Pattern, Handle, Timeout),
+        fun() ->
+          receive
+            Pattern ->
+              Handle;
+            Msg ->
+              erlang:error({unexpected,
+                            [{line, ?LINE},
+                             {pattern, ??Pattern},
+                             {received, Msg}]})
+          after
+            Timeout ->
+              erlang:error({timeout,
+                            [{line, ?LINE},
+                             {pattern, ??Pattern}]})
+          end
+        end()).
 %% Called when the plugin application start
 load(Env) ->
     brod_init([Env]),
@@ -230,9 +247,9 @@ on_message_publish(Message, _Env) ->
                 {ok, crypto:rand_uniform(0, PartitionsCount)}
                 end,
     {ok, CallRef} = brod:produce(brod_client_1, ProduceTopic, PartitionFun, <<>>, Json),
-    #brod_produce_reply{ call_ref = CallRef %% returned from brod:produce
-                    , result   = brod_produce_req_acked
-                    },
+    ?WAIT(#brod_produce_reply{call_ref = CallRef,
+                                result = brod_produce_req_acked},
+            ok, 2000),
     % ekaf:produce_async(ProduceTopic, Json),
     % ekaf:produce_async(Topic, Payload),
     {ok, Message}.
